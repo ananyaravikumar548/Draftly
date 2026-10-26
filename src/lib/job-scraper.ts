@@ -1,3 +1,6 @@
+/**
+ * Safely fetches public job pages and extracts structured or visible posting content.
+ */
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 import { get } from 'node:http';
@@ -22,6 +25,7 @@ type IpAddress = { address: string; family: number };
 type PageResponse = { statusCode: number; location?: string; contentType: string; body: string };
 type ExtractedPosting = { text: string; title: string; company: string; location: string; email: string | null; source: string };
 
+// Reject private, loopback, link-local, and reserved IP ranges before making a request.
 function isPublicAddress(address: string): boolean {
   const family = isIP(address);
   if (family === 4) {
@@ -49,6 +53,7 @@ function isPublicAddress(address: string): boolean {
   return false;
 }
 
+// Resolve DNS up front and refuse hostnames that could target local infrastructure.
 async function resolvePublicAddresses(hostname: string): Promise<IpAddress[]> {
   const normalizedHost = hostname.toLowerCase().replace(/\.$/, '');
   if (!normalizedHost || normalizedHost === 'localhost' || normalizedHost.endsWith('.localhost') || normalizedHost.endsWith('.local') || normalizedHost.endsWith('.internal')) {
@@ -65,6 +70,7 @@ async function resolvePublicAddresses(hostname: string): Promise<IpAddress[]> {
   return addresses;
 }
 
+// Pin the connection to the checked IP so DNS cannot change between validation and fetch.
 async function requestPage(url: URL, signal: AbortSignal, accept = 'text/html,application/xhtml+xml,application/ld+json;q=0.9,*/*;q=0.5'): Promise<PageResponse> {
   const addresses = await resolvePublicAddresses(url.hostname);
   const address = addresses[0];
@@ -129,6 +135,7 @@ async function requestPage(url: URL, signal: AbortSignal, accept = 'text/html,ap
   });
 }
 
+// Follow only a small number of HTTP redirects under one overall timeout.
 async function downloadPage(startUrl: URL) {
   let current = new URL(startUrl);
   const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
@@ -177,6 +184,7 @@ function findJobPosting(value: unknown): Record<string, unknown> | undefined {
   return findJobPosting(record['@graph']) ?? findJobPosting(record.itemListElement);
 }
 
+// JobPosting JSON-LD is usually cleaner than page markup, so prefer it when available.
 function schemaText(html: string) {
   const $ = load(html);
   for (const script of $('script[type="application/ld+json"]').toArray()) {
@@ -204,6 +212,7 @@ function schemaText(html: string) {
   return undefined;
 }
 
+// Fall back to likely job-description containers, then use the remaining page body.
 function extractVisibleText(html: string) {
   const $ = load(html);
   $('script, style, noscript, svg, nav, header, footer, iframe, form, button, [aria-hidden="true"]').remove();
@@ -299,6 +308,7 @@ async function extractAshbyPosting(url: URL): Promise<ExtractedPosting | undefin
   }
 }
 
+// Public entry point: validate the URL, handle supported ATS pages, then extract a posting.
 export async function extractJobPosting(urlString: string): Promise<ExtractedPosting> {
   let url: URL;
   try {

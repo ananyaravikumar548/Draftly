@@ -1,9 +1,13 @@
+/**
+ * Seeds missing demo portfolio records while preserving existing user edits.
+ */
 import { ObjectId } from 'mongodb';
 import { collection } from './mongo';
 import { demoPortfolioItems, demoPreUniversityEducation, demoProfile, type PortfolioRecord, type Profile } from './portfolio-types';
 
-const SEED_VERSION = 'demo-portfolio-v4';
+const SEED_VERSION = 'demo-portfolio-v5';
 
+// Apply this seed version once, adding only records that are missing.
 export async function ensureDemoPortfolio() {
   const metadata = await collection<{ _id: string; initializedAt?: Date }>('app_metadata');
   if (await metadata.findOne({ _id: SEED_VERSION })) return;

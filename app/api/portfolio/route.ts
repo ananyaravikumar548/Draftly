@@ -1,3 +1,6 @@
+/**
+ * Reads portfolio data and creates validated portfolio items.
+ */
 import { ObjectId } from 'mongodb';
 import { collection, databaseErrorResponse } from '@/src/lib/mongo';
 import { PortfolioItemSchema, type PortfolioRecord } from '@/src/lib/portfolio-types';
@@ -9,6 +12,7 @@ function serialize(item: PortfolioRecord) {
   return { id: item._id.toString(), type: item.type, title: item.title, description: item.description, technologies: item.technologies, dateRange: item.dateRange, createdAt: item.createdAt?.toISOString() };
 }
 
+// Return the profile's portfolio items in the client-facing ID format.
 export async function GET() {
   try {
     const items = await collection<PortfolioRecord>('portfolio_items');
@@ -18,6 +22,7 @@ export async function GET() {
   } catch (error) { return databaseErrorResponse(error); }
 }
 
+// Validate a new item, then assign its MongoDB ID and creation timestamp.
 export async function POST(request: Request) {
   try {
     const body: unknown = await request.json();

@@ -1,3 +1,6 @@
+/**
+ * Shared MongoDB connection, typed collection access, and database error responses.
+ */
 import { MongoClient, type Collection, type Document } from 'mongodb';
 
 const uri = process.env.MONGODB_URI ?? 'mongodb://127.0.0.1:27017/careerflow';
@@ -8,6 +11,7 @@ declare global {
   var careerflowMongo: Promise<MongoClient> | undefined;
 }
 
+// Share an in-flight connection instead of opening a new Mongo client per request.
 function getClientPromise() {
   if (globalThis.careerflowMongo) return globalThis.careerflowMongo;
 
@@ -24,6 +28,7 @@ function getClientPromise() {
   return promise;
 }
 
+// Centralize typed collection access and record connection timing for diagnostics.
 export async function collection<T extends Document>(name: string): Promise<Collection<T>> {
   const startedAt = performance.now();
   try {
@@ -38,13 +43,14 @@ export async function collection<T extends Document>(name: string): Promise<Coll
 
 export class DatabaseUnavailableError extends Error {
   constructor() {
-    super('Local MongoDB is not running. Start MongoDB, then retry.');
+    super('MongoDB is unavailable. Check the database URI and service, then retry.');
     this.name = 'DatabaseUnavailableError';
   }
 }
 
+// Return a stable user-facing message without exposing low-level database details.
 export function databaseErrorResponse(error: unknown) {
-  const message = error instanceof Error ? error.message : 'The local database request failed.';
+  const message = error instanceof Error ? error.message : 'The database request failed.';
   const errorName = error instanceof Error ? error.name : '';
   const unavailable = error instanceof DatabaseUnavailableError
     || errorName === 'MongoServerSelectionError'
@@ -53,5 +59,5 @@ export function databaseErrorResponse(error: unknown) {
     || message.includes('connect EPERM')
     || message.includes('ETIMEDOUT');
   const status = unavailable ? 503 : 500;
-  return Response.json({ error: status === 503 ? 'Draftly could not connect to local MongoDB. Start the database and retry.' : 'Draftly could not save this change. Please retry.' }, { status });
+  return Response.json({ error: status === 503 ? 'Draftly could not connect to its database. Check the database configuration and availability, then retry.' : 'Draftly could not save this change. Please retry.' }, { status });
 }

@@ -1,8 +1,12 @@
+/**
+ * Renders submitted resume data into a PDF preview response.
+ */
 import { createElement } from 'react';
 import { ResumeSchema } from '@/src/lib/application-types';
 
 export const dynamic = 'force-dynamic';
 
+// Validate browser-supplied resume data and stream back a freshly rendered PDF.
 export async function POST(request: Request) {
   const requestStartedAt = performance.now();
   console.info('[resume-preview] POST start');

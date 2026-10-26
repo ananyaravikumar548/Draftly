@@ -1,3 +1,6 @@
+/**
+ * Static sample data from the original UI prototype.
+ */
 export type Application = { id: string; company: string; role: string; match: number; applied: string; status: 'Applied' | 'Interview' | 'Draft Created' | 'Rejected'; location: string; source: string };
 export type PortfolioItem = { title: string; tech: string[]; description: string };
 export type Skill = { name: string; level: 'Matched' | 'Partial' | 'Gap' };

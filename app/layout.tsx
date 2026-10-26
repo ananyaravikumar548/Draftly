@@ -1,3 +1,6 @@
+/**
+ * Root document wrapper: loads global styles, fonts, and shared page metadata.
+ */
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "@fontsource/inter/latin.css";

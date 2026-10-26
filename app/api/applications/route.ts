@@ -1,8 +1,12 @@
+/**
+ * Lists recent saved applications for the application history screen.
+ */
 import { collection, databaseErrorResponse } from '@/src/lib/mongo';
 import type { ApplicationRecord } from '@/src/lib/application-types';
 
 export const dynamic = 'force-dynamic';
 
+// Exclude large job text, sort newest first, and cap the history response at 100 rows.
 export async function GET() {
   const requestStartedAt = performance.now();
   console.info('[applications] GET start');

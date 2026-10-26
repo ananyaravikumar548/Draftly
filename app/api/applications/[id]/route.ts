@@ -1,3 +1,6 @@
+/**
+ * Reads and updates one saved application, including its editable resume data.
+ */
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 import { collection, databaseErrorResponse } from '@/src/lib/mongo';
@@ -8,6 +11,7 @@ export const dynamic = 'force-dynamic';
 type RouteProps = { params: Promise<{ id: string }> };
 const EditSchema = z.object({ resume_json: ResumeSchema, analysis: AnalysisSchema.optional() });
 
+// Load one application and normalize database-only fields for the browser.
 export async function GET(_request: Request, { params }: RouteProps) {
   try {
     const { id } = await params;
@@ -26,6 +30,7 @@ export async function GET(_request: Request, { params }: RouteProps) {
   } catch (error) { return databaseErrorResponse(error); }
 }
 
+// Validate edited resume data before writing it back to the application record.
 export async function PATCH(request: Request, { params }: RouteProps) {
   try {
     const { id } = await params;

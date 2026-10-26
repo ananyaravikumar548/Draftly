@@ -1,8 +1,12 @@
+/**
+ * Validates a public job URL and returns extracted posting details.
+ */
 import { z } from 'zod';
 import { extractJobPosting, JobScrapeError } from '@/src/lib/job-scraper';
 
 const InputSchema = z.object({ url: z.string().trim().url().max(2048) });
 
+// Expose job extraction as a small API used by the application flow.
 export async function POST(request: Request) {
   try {
     const input: unknown = await request.json();

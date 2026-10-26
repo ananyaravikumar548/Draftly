@@ -1,4 +1,6 @@
 'use client';
+// Refreshes the embedded A4 PDF preview whenever resume data changes.
+
 import { useEffect, useState } from 'react';
 import type { ResumeData } from '@/src/lib/application-types';
 
@@ -18,11 +20,11 @@ export function ResumePreview({ data }: { data: ResumeData }) {
       } catch (cause) {
         if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Could not render the resume preview.');
       }
-    }, 450);
+    }, 350);
     return () => { window.clearTimeout(timer); controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [data]);
 
   if (error) return <div className="resume-loading" role="alert">{error}</div>;
   if (!pdfUrl) return <div className="resume-loading">Preparing resume preview…</div>;
-  return <iframe className="resume-pdf-viewer" src={`${pdfUrl}#zoom=70`} title="Live resume PDF preview" />;
+  return <iframe className="resume-pdf-viewer" src={`${pdfUrl}#zoom=70`} title="Live A4 resume PDF preview" />;
 }

@@ -1,9 +1,13 @@
+/**
+ * Older demo seeding implementation retained as a separate source file.
+ */
 import { ObjectId } from 'mongodb';
 import { collection } from './mongo';
 import { demoPortfolioItems, demoProfile, type PortfolioRecord, type Profile } from './portfolio-types';
 
 const SEED_VERSION = 'demo-portfolio-v3';
 
+// Initialize the older seed by replacing stored demo records and profile data.
 export async function ensureDemoPortfolio() {
   const metadata = await collection<{ _id: string; initializedAt?: Date }>('app_metadata');
   if (await metadata.findOne({ _id: SEED_VERSION })) return;

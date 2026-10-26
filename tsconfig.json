@@ -1,3 +1,4 @@
+// TypeScript compiler options and project file inclusion rules.
 {
   "compilerOptions": {
     "target": "ES2017",

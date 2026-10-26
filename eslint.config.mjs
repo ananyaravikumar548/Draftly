@@ -1,3 +1,6 @@
+/**
+ * ESLint presets and ignore rules for the Next.js application.
+ */
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
@@ -11,6 +14,7 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    ".kilo/**",
     "next-env.d.ts",
   ]),
 ]);

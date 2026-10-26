@@ -1,3 +1,6 @@
+/**
+ * Renders a local fictional job posting selected by its URL slug.
+ */
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getDemoJob } from '@/src/lib/demo-jobs';

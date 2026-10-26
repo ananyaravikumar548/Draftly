@@ -1,3 +1,6 @@
+/**
+ * Updates or deletes a single portfolio item by its MongoDB ID.
+ */
 import { ObjectId } from 'mongodb';
 import { collection, databaseErrorResponse } from '@/src/lib/mongo';
 import { PortfolioItemSchema, type PortfolioRecord } from '@/src/lib/portfolio-types';
@@ -7,6 +10,7 @@ export const dynamic = 'force-dynamic';
 type RouteProps = { params: Promise<{ id: string }> };
 function serialize(item: PortfolioRecord) { return { id: item._id.toString(), type: item.type, title: item.title, description: item.description, technologies: item.technologies, dateRange: item.dateRange, createdAt: item.createdAt?.toISOString() }; }
 
+// Update only the requested item after validating the submitted fields.
 export async function PATCH(request: Request, { params }: RouteProps) {
   try {
     const { id } = await params;
@@ -21,6 +25,7 @@ export async function PATCH(request: Request, { params }: RouteProps) {
   } catch (error) { return databaseErrorResponse(error); }
 }
 
+// Delete the requested item and report when its ID does not exist.
 export async function DELETE(_request: Request, { params }: RouteProps) {
   try {
     const { id } = await params;

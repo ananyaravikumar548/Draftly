@@ -1,7 +1,11 @@
+/**
+ * Starts the Google OAuth flow and stores short-lived state for the callback.
+ */
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getGoogleOAuthClient, GMAIL_SCOPES } from "@/src/lib/google";
 
+// Create an OAuth URL and an HTTP-only state cookie to protect the callback.
 export async function GET() {
   const oauth2Client = getGoogleOAuthClient();
 

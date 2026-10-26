@@ -1,5 +1,9 @@
+/**
+ * Shared runtime schemas and TypeScript types for AI analysis, resumes, and saved applications.
+ */
 import { z } from 'zod';
 
+// Bound model output fields before using them in the UI or saving them.
 export const AnalysisSchema = z.object({
   company_name: z.string().min(1).max(160),
   job_title: z.string().min(1).max(160),
@@ -18,6 +22,7 @@ export const AnalysisSchema = z.object({
   email_body: z.string().min(1).max(4000),
 });
 
+// Define the normalized resume shape shared by the API and PDF components.
 export const ResumeSchema = z.object({
   profile: z.object({ full_name: z.string(), role: z.string().default(''), email: z.string(), phone: z.string(), location: z.string(), linkedin: z.string(), github: z.string() }),
   summary: z.string(),

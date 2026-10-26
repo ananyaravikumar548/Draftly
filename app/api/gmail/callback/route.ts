@@ -1,8 +1,12 @@
+/**
+ * Handles the Google OAuth callback and stores Gmail connection tokens.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 import { getGoogleOAuthClient } from "@/src/lib/google";
 import { collection } from "@/src/lib/mongo";
 
+// Exchange Google's authorization code for tokens and persist the authorized account.
 export async function GET(request: NextRequest) {
   try {
     const code = request.nextUrl.searchParams.get("code");

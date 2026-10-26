@@ -1,3 +1,6 @@
+/**
+ * Earlier PDF resume layout retained as a separate source file.
+ */
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { ResumeData } from '@/src/lib/application-types';
 

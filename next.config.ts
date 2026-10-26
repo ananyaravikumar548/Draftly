@@ -1,3 +1,6 @@
+/**
+ * Next.js build configuration, including the root used for server file tracing.
+ */
 import type { NextConfig } from "next";
 import path from "node:path";
 

@@ -1,3 +1,6 @@
+/**
+ * Reads and saves the primary candidate profile.
+ */
 import { collection, databaseErrorResponse } from '@/src/lib/mongo';
 import { demoProfile, ProfileSchema, type Profile } from '@/src/lib/portfolio-types';
 import { ensureDemoPortfolio } from '@/src/lib/ensure-demo-portfolio';
@@ -6,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 type ProfileDocument = Profile & { _id: string };
 
+// Read the primary profile and return a demo profile if setup has not run yet.
 export async function GET() {
   try {
     await ensureDemoPortfolio();
@@ -19,6 +23,7 @@ export async function GET() {
   } catch (error) { return databaseErrorResponse(error); }
 }
 
+// Validate profile fields before replacing the saved primary profile.
 export async function PUT(request: Request) {
   try {
     const body: unknown = await request.json();

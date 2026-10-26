@@ -1,8 +1,9 @@
 'use client';
+// Client-side portfolio editor for profile details and evidence items.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CSSProperties, FormEvent, ReactNode } from 'react';
-import { ArrowRight, ArrowUpRight, Check, LoaderCircle, Plus, Save, Sparkles, Trash2, X } from '../ui/icons';
+import { Check, LoaderCircle, Plus, Save, Sparkles, Trash2, X } from '../ui/icons';
 import { AppShell } from '../layout/AppShell';
 import { PageHeader } from '../ui/PageHeader';
 import { Badge } from '../ui/Badge';
@@ -13,6 +14,7 @@ type EditableItem = Omit<PortfolioItem, 'id' | 'createdAt'>;
 const emptyProfile: Profile = { fullName: '', email: '', phone: '', location: '', linkedin: '', github: '', role: '', bio: '', education: [] };
 const emptyItem: EditableItem = { type: 'project', title: '', description: '', technologies: [], dateRange: '' };
 
+// Parse API responses consistently and surface server-provided errors to the form.
 async function readResponse<T>(response: Response): Promise<T> {
   const body = await response.json() as T & { error?: string };
   if (!response.ok) throw new Error(body.error ?? 'The request could not be completed.');
@@ -39,24 +41,24 @@ export function PortfolioManager() {
   const [savingItem, setSavingItem] = useState(false);
   const [techText, setTechText] = useState('');
 
+  // Fetch profile and portfolio without mutating state so the loader can be shared safely.
   const load = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [profileResult, itemResult] = await Promise.all([
-        fetch('/api/profile').then((response) => readResponse<{ profile: Profile }>(response)),
-        fetch('/api/portfolio').then((response) => readResponse<{ items: PortfolioItem[] }>(response)),
-      ]);
-      setProfile(profileResult.profile);
-      setItems(itemResult.items);
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Could not load your local portfolio.');
-    } finally {
-      setLoading(false);
-    }
+    const [profileResult, itemResult] = await Promise.all([
+      fetch('/api/profile').then((response) => readResponse<{ profile: Profile }>(response)),
+      fetch('/api/portfolio').then((response) => readResponse<{ items: PortfolioItem[] }>(response)),
+    ]);
+    return { profile: profileResult.profile, items: itemResult.items };
   }, []);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    let active = true;
+    void load().then(({ profile: loadedProfile, items: loadedItems }) => {
+      if (active) { setProfile(loadedProfile); setItems(loadedItems); }
+    }).catch((caught: unknown) => {
+      if (active) setError(caught instanceof Error ? caught.message : 'Could not load your local portfolio.');
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [load]);
 
   const projectItems = useMemo(() => items.filter((item) => item.type !== 'skill'), [items]);
   const skillItems = useMemo(() => items.filter((item) => item.type === 'skill'), [items]);
@@ -68,6 +70,7 @@ export function PortfolioManager() {
     return Math.round(((filledProfileFields + describedItems) / total) * 100);
   }, [profile, projectItems]);
 
+  // Validate and persist the profile form through the profile API.
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSavingProfile(true);
@@ -75,12 +78,13 @@ export function PortfolioManager() {
     try {
       const result = await fetch('/api/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(profile) }).then((response) => readResponse<{ profile: Profile }>(response));
       setProfile(result.profile);
-      setNotice('Profile saved to your local database.');
+      setNotice('Profile saved to your workspace.');
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not save your profile.');
     } finally { setSavingProfile(false); }
   }
 
+  // Start a blank item form, optionally preselecting the requested portfolio category.
   function openNew(type: ItemType = 'project') {
     setEditingId(null);
     setItemEditor({ ...emptyItem, type });
@@ -88,6 +92,7 @@ export function PortfolioManager() {
     setError('');
   }
 
+  // Copy the selected record into form state so canceling does not change the saved item.
   function openEdit(item: PortfolioItem) {
     setEditingId(item.id);
     setItemEditor({ type: item.type, title: item.title, description: item.description, technologies: item.technologies, dateRange: item.dateRange });
@@ -95,6 +100,7 @@ export function PortfolioManager() {
     setError('');
   }
 
+  // Create or update the selected portfolio item based on whether it has an ID.
   async function saveItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!itemEditor) return;
@@ -112,6 +118,7 @@ export function PortfolioManager() {
     } finally { setSavingItem(false); }
   }
 
+  // Remove one saved item after the user confirms the action.
   async function deleteItem(item: PortfolioItem) {
     if (!window.confirm(`Delete “${item.title}” from your portfolio?`)) return;
     setError('');
@@ -125,8 +132,8 @@ export function PortfolioManager() {
   return <AppShell><div className="content-wrap portfolio-page">
     <PageHeader eyebrow="YOUR PROFESSIONAL STORY" title="My portfolio" subtitle="Keep your experience and strongest work ready for every opportunity." action={<button type="button" onClick={() => openNew()} className="button primary"><Plus size={16}/>Add to portfolio</button>}/>
     <div className="fictional-demo-note"><b>Sample workspace</b><span>This profile uses fictional names, contact details, and experience. Replace the sample content with verified information before using it in real applications.</span></div>
-    <div className="portfolio-workspace-note"><span className="db-note-dot"/>Saved to your local workspace</div>
-    {error && <div className="error-banner" role="alert"><span>{error}</span><button className="text-button" onClick={() => void load()}>Retry</button></div>}
+    <div className="portfolio-workspace-note"><span className="db-note-dot"/>Saved to your workspace</div>
+    {error && <div className="error-banner" role="alert"><span>{error}</span><button className="text-button" onClick={() => { setError(''); setLoading(true); void load().then(({ profile: loadedProfile, items: loadedItems }) => { setProfile(loadedProfile); setItems(loadedItems); }).catch((caught: unknown) => setError(caught instanceof Error ? caught.message : 'Could not load your local portfolio.')).finally(() => setLoading(false)); }}>Retry</button></div>}
     {notice && <div className="success-banner" role="status"><Check size={15}/>{notice}<button onClick={() => setNotice('')} aria-label="Dismiss notice"><X size={14}/></button></div>}
     {loading ? <Card className="portfolio-loading"><LoaderCircle className="spin" size={18}/>Loading your portfolio…</Card> : <>
       <section className="portfolio-overview" aria-label="Portfolio overview">
@@ -136,7 +143,7 @@ export function PortfolioManager() {
           <div className="portfolio-completion"><div className="completion-ring" style={{ '--completion': `${profileCompletion}%` } as CSSProperties}><span>{profileCompletion}<small>%</small></span></div><div><b>Profile strength</b><span>Complete the details that support your story.</span></div></div>
         </div>
         <p className="portfolio-bio">{profile.bio || 'Add a concise summary that shows the work you do and the strengths you bring.'}</p>
-        <div className="portfolio-overview-footer"><div className="portfolio-contact-preview"><span>{profile.email || 'Add an email address'}</span>{profile.phone && <><i/>{profile.phone}</>}{profile.linkedin && <><i/>{profile.linkedin}</>}</div><div className="portfolio-saved-status"><span className="db-note-dot"/>Local workspace</div></div>
+        <div className="portfolio-overview-footer"><div className="portfolio-contact-preview"><span>{profile.email || 'Add an email address'}</span>{profile.phone && <><i/>{profile.phone}</>}{profile.linkedin && <><i/>{profile.linkedin}</>}</div><div className="portfolio-saved-status"><span className="db-note-dot"/>Workspace saved</div></div>
       </section>
       <div className="portfolio-metrics" aria-label="Portfolio at a glance"><div><span>Selected work</span><b>{projectItems.length.toString().padStart(2, '0')}</b><small>projects & experience</small></div><div><span>Skills</span><b>{skillItems.length.toString().padStart(2, '0')}</b><small>in your profile</small></div><div><span>Education</span><b>{profile.education.length.toString().padStart(2, '0')}</b><small>qualifications</small></div></div>
       <form onSubmit={saveProfile} className="profile-details-form">

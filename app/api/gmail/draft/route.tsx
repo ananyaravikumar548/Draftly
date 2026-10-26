@@ -1,3 +1,6 @@
+/**
+ * Creates a Gmail draft with the tailored email and resume PDF attachment.
+ */
 import { google } from "googleapis";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
@@ -26,6 +29,7 @@ const DraftSchema = z.object({
   application_id: z.string().min(1),
 });
 
+// Gmail expects the complete MIME message to use URL-safe base64 encoding.
 function toBase64Url(value: string) {
   return Buffer.from(value, "utf8")
     .toString("base64")
@@ -38,14 +42,17 @@ function wrapBase64(value: string) {
   return value.match(/.{1,76}/g)?.join("\r\n") ?? value;
 }
 
+// Use the shared resume component so the attachment matches the app's PDF download.
 async function renderResumePdf(resume: ResumeData) {
   return renderToBuffer(<ResumeDocument data={resume} />);
 }
 
+// Strip line breaks from MIME header values to prevent header injection.
 function escapeHeader(value: string) {
   return value.replace(/[\r\n]+/g, " ").trim();
 }
 
+// Assemble the message, authenticate the Gmail client, and save it as a draft.
 export async function POST(request: Request) {
   const requestStartedAt = Date.now();
 

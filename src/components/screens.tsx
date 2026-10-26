@@ -1,22 +1,35 @@
 'use client';
+// Screen-level components that connect route pages to the larger UI flows.
+
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, Check, FileText, Sparkles } from './ui/icons';
 import { NewApplicationFlow, ReviewFlow, HistoryFlow } from './ApplicationFlows';
 import { PortfolioManager } from './portfolio/PortfolioManager';
 
+// Provide the demo workspace entry point and explain the sample-data context.
 export function LoginScreen() {
   const router = useRouter();
   return <main className="login-page">
-    <header className="login-topbar"><Link className="brand" href="/"><span className="brand-mark"><Sparkles size={17}/></span><span>Draftly</span></Link><Link href="/" className="login-back">Back to home</Link></header>
     <section className="login-brand">
-      <span className="login-badge">YOUR NEXT CHAPTER, WELL PREPARED</span>
-      <div className="login-pitch"><h1>Your portfolio,<br/><em>tailored.</em></h1><p>Bring your experience into focus, find the strongest evidence for each role, and draft an application that feels considered.</p>
-        <div className="feature-list"><div><span><Check size={14}/></span>Clear job and portfolio alignment</div><div><span><Check size={14}/></span>A complete resume, ready to review</div><div><span><Check size={14}/></span>One calm place for your applications</div></div>
+      <Link className="login-brand-wordmark" href="/" aria-label="Draftly home"><span className="brand-mark"><Sparkles size={17}/></span><span>Draftly</span></Link>
+      <span className="login-badge"><Sparkles size={12}/> YOUR WORK, IN THE RIGHT LIGHT</span>
+      <div className="login-pitch"><h1><span>Make your next</span><span>move <em>with clarity.</em></span></h1><p>See how your experience connects to a role, then shape an application with evidence behind every claim.</p>
+        <div className="feature-list"><div><span><Check size={14}/></span>Find relevant portfolio evidence</div><div><span><Check size={14}/></span>Review a focused resume draft</div><div><span><Check size={14}/></span>Keep every edit in your hands</div></div>
       </div>
-      <div className="quote-card"><Sparkles size={16}/><span>Your portfolio, tailored. Your application, drafted.</span></div>
+      <div className="login-side-note"><span className="login-note-mark"><FileText size={17}/></span><span><b>A thoughtful starting point</b><small>One workspace for the role, your evidence, and your draft.</small></span><ArrowRight size={15}/></div>
     </section>
-    <section className="login-side"><div className="login-card"><div className="login-icon"><Sparkles size={19}/></div><span className="demo-entry-label">DRAFTLY DEMO WORKSPACE</span><h2>Welcome to Draftly</h2><p>Step into a complete sample workspace with a fictional portfolio and example roles.</p><button className="button primary wide" onClick={()=>router.push('/new-application')}>Continue to sample workspace <ArrowRight size={16}/></button><div className="auth-coming"><Sparkles size={14}/><span><b>Personal sign-in is coming soon</b><small>Google and email login will be connected in the final integration stage.</small></span></div><Link className="text-button login-portfolio-link" href="/portfolio"><FileText size={14}/> Preview the sample portfolio <ArrowRight size={13}/></Link></div><footer><span>Fictional sample data</span><span>© 2026 Draftly</span></footer></section>
+    <section className="login-side">
+      <Link href="/" className="login-back"><span aria-hidden="true">←</span> Back to home</Link>
+      <div className="login-card">
+      <span className="login-card-kicker">YOUR SAMPLE WORKSPACE</span><h2>Start with the demo</h2><p>No account setup needed. Explore a complete sample profile and build a tailored application from a job posting.</p>
+      <ol className="login-preview-list"><li><i>01</i><span><b>Choose a role</b><small>Use a live link or a sample job</small></span></li><li><i>02</i><span><b>Review your match</b><small>See the evidence behind the score</small></span></li><li><i>03</i><span><b>Shape your draft</b><small>Edit, save, and export your resume</small></span></li></ol>
+      <button className="button primary wide" onClick={()=>router.push('/new-application')}>Get started <ArrowRight size={16}/></button>
+      <Link className="login-portfolio-link" href="/portfolio"><FileText size={15}/> Preview the sample portfolio <ArrowRight size={14}/></Link>
+      <div className="login-demo-foot"><span className="login-demo-dot"/> Fictional sample data · safe to explore</div>
+      </div>
+      <footer><span>Draftly sample workspace</span><span>© 2026 Draftly</span></footer>
+    </section>
   </main>;
 }
 

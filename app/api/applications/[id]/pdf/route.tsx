@@ -1,3 +1,6 @@
+/**
+ * Builds a downloadable PDF resume from a saved application.
+ */
 import { renderToBuffer } from '@react-pdf/renderer';
 import { ObjectId } from 'mongodb';
 import { ResumeDocument } from '@/src/components/resume/ResumeDocument';
@@ -8,6 +11,7 @@ import { collection, databaseErrorResponse } from '@/src/lib/mongo';
 export const dynamic = 'force-dynamic';
 type RouteProps = { params: Promise<{ id: string }> };
 
+// Read and validate the stored resume, then render and download it as a PDF.
 export async function GET(_request: Request, { params }: RouteProps) {
   try {
     const { id } = await params;

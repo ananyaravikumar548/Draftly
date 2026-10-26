@@ -1,5 +1,9 @@
+/**
+ * Portfolio and profile validation schemas, data types, and fictional demo records.
+ */
 import { z } from 'zod';
 
+// Keep profile values within practical limits before they reach persistent storage.
 export const ProfileSchema = z.object({
   fullName: z.string().trim().min(1).max(120),
   email: z.string().trim().email().or(z.literal('')),
@@ -12,6 +16,7 @@ export const ProfileSchema = z.object({
   education: z.array(z.object({ school: z.string(), degree: z.string(), field: z.string(), start: z.string(), end: z.string(), grade: z.string() })).max(8),
 });
 
+// Restrict portfolio categories and field lengths for both create and edit operations.
 export const PortfolioItemSchema = z.object({
   type: z.enum(['project', 'experience', 'skill', 'education', 'certification', 'achievement']),
   title: z.string().trim().min(1).max(160),

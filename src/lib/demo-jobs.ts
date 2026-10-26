@@ -1,3 +1,6 @@
+/**
+ * Fictional job posting fixtures used for deterministic local demonstrations.
+ */
 export type DemoJob = {
   slug: string;
   company: string;
@@ -20,4 +23,5 @@ export const demoJobs: DemoJob[] = [
   },
 ];
 
+// Resolve a fixture by its route slug; an unknown slug returns undefined.
 export function getDemoJob(slug: string) { return demoJobs.find((job) => job.slug === slug); }
